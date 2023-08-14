@@ -1,0 +1,5 @@
+mypy==1.9.0
+numpy==1.26.0
+pre-commit==3.6.2
+pygame-ce==2.4.1
+ruff==0.3.2
