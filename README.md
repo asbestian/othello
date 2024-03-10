@@ -20,3 +20,7 @@ Execute and tested with Python **3.10**
 ## Pre-commit hooks
 
 - install pre-commit hooks: `pre-commit install`
+
+# Author
+
+[Sebastian Schenker](https://www.github.com/asbestian)
