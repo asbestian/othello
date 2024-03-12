@@ -20,9 +20,11 @@ def main():
                 case EventType(type=pg.KEYDOWN):
                     if event.key == pg.K_p:
                         board.pass_move()
-                    elif event.key == pg.K_q:
+                    elif event.key == pg.K_p:  # pass
+                        board.pass_move
+                    elif event.key == pg.K_q:  # quit
                         done = True
-                    elif event.key == pg.K_r:
+                    elif event.key == pg.K_r:  # revert
                         board.revert()
                 case EventType(type=pg.QUIT):
                     done = True

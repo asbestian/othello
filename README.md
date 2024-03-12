@@ -8,19 +8,26 @@ Execute and tested with Python **3.10**
 
 (Pygame does currently not work with Python > 3.10 on my machine.)
 
-## Installation
-
 - create virtual environemt: `python3 -m venv venv`
 - init venv: `source venv/bin/activate`
 - install dependencies: `python3 -m pip install -r requirements`
+- run via: `python3 main.py`
 
-## Execution
-- run: `python3 main.py`
+# Keymap
+
+When game is running, press
+
+- `p` to pass
+- `q` to quit
+- `r` to revert last move
+
+
 
 ## Pre-commit hooks
 
-- install pre-commit hooks: `pre-commit install`
+- install pre-commit hooks via: `pre-commit install`
 
-# Author
+
+## Author
 
 [Sebastian Schenker](https://www.github.com/asbestian)
