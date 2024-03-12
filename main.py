@@ -1,9 +1,9 @@
 import logging
-import pygame as pg
 
-from game.board import Board
+import pygame as pg
 from pygame.event import EventType
 
+from game.board import Board
 
 module_logger = logging.getLogger("main")
 
@@ -13,7 +13,7 @@ def main():
     pg.init()
     pg.display.set_caption("Othello")
     done = False
-    board = Board(8)
+    board = Board()
     while not done:
         for event in pg.event.get():
             match event:
@@ -29,7 +29,7 @@ def main():
                 case EventType(type=pg.MOUSEBUTTONDOWN):
                     x = pg.mouse.get_pos()[0] // Board.SQUARE_SIZE
                     y = pg.mouse.get_pos()[1] // Board.SQUARE_SIZE
-                    module_logger.info(f"{board.player} on row:{y} and column:{x}")
+                    module_logger.debug(f"{board.player} on row:{y} and column:{x}")
                     board.update(column=x, row=y)
         pg.display.flip()
     pg.quit()
