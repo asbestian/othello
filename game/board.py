@@ -78,6 +78,16 @@ class Board:
         self.board[mid_point + 1, mid_point] = Player.BLACK.id()
         self.board[mid_point + 1, mid_point + 1] = Player.WHITE.id()
         self.previous_board: NDArray[np.byte] = self.board
+        self.getters = [
+            self._get_left_stones_to_flip,
+            self._get_right_stones_to_flip,
+            self._get_top_stones_to_flip,
+            self._get_bottom_stones_to_flip,
+            self._get_top_right_stones_to_flip,
+            self._get_top_left_stones_to_flip,
+            self._get_bottom_right_stones_to_flip,
+            self._get_bottom_left_stones_to_flip,
+        ]
         self._draw()
 
     def _get_left_stones_to_flip(self, pos: Position) -> list[Position]:
@@ -244,14 +254,8 @@ class Board:
         to_flip: list[Position] = []
         position = Position(row, column)
 
-        to_flip.extend(self._get_left_stones_to_flip(position))
-        to_flip.extend(self._get_right_stones_to_flip(position))
-        to_flip.extend(self._get_top_stones_to_flip(position))
-        to_flip.extend(self._get_bottom_stones_to_flip(position))
-        to_flip.extend(self._get_top_right_stones_to_flip(position))
-        to_flip.extend(self._get_top_left_stones_to_flip(position))
-        to_flip.extend(self._get_bottom_right_stones_to_flip(position))
-        to_flip.extend(self._get_bottom_left_stones_to_flip(position))
+        for get_func in self.getters:
+            to_flip.extend(get_func(position))
 
         if not to_flip:
             logger.warning("Invalid move for %s.", self.player.name)
@@ -274,8 +278,19 @@ class Board:
             self._draw()
             self.player = self.player.other()
 
-    def pass_move(self):
-        # ToDo check whether no move available
+    def pass_move(self) -> None:
+        for pos in (
+            Position(row, col)
+            for row, col in product(range(Board.SIZE), repeat=2)
+            if not self.board[row, col]
+        ):
+            for get_fct in self.getters:
+                if get_fct(pos):
+                    logger.warning(
+                        "Passing is not permitted for %s as available move exists.",
+                        self.player.name,
+                    )
+                    return
         self.player = self.player.other()
 
     def _draw(self):
