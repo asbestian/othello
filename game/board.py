@@ -3,6 +3,7 @@
 import logging
 from dataclasses import dataclass
 from enum import Enum
+from functools import cached_property
 from itertools import product
 
 import numpy as np
@@ -34,26 +35,30 @@ class Player(Enum):
     BLACK = (1, BLACK_RGB)
     WHITE = (2, WHITE_RGB)
 
+    @property
     def rgb(self) -> tuple[int, int, int]:
         return self.value[1]
 
+    @property
     def id(self) -> int:
         return self.value[0]
 
+    @property
     def other(self) -> "Player":
         return Player.BLACK if self == Player.WHITE else Player.WHITE
 
+    @property
     def other_id(self) -> int:
-        return self.other().id()
+        return self.other.id
 
     def __str__(self) -> str:
         return self.name.lower()
 
     @classmethod
     def from_id(cls, id: np.byte) -> "Player":
-        if id == cls.BLACK.id():
+        if id == cls.BLACK.id:
             return cls.BLACK
-        elif id == cls.WHITE.id():
+        elif id == cls.WHITE.id:
             return cls.WHITE
         else:
             raise RuntimeError("Invalid id %d.", id)
@@ -73,10 +78,10 @@ class Board:
         self.board: NDArray[np.byte] = np.zeros((Board.SIZE, Board.SIZE), dtype=np.byte)
         self.player: Player = player
         mid_point = Board.SIZE // 2 - 1
-        self.board[mid_point, mid_point] = Player.WHITE.id()
-        self.board[mid_point, mid_point + 1] = Player.BLACK.id()
-        self.board[mid_point + 1, mid_point] = Player.BLACK.id()
-        self.board[mid_point + 1, mid_point + 1] = Player.WHITE.id()
+        self.board[mid_point, mid_point] = Player.WHITE.id
+        self.board[mid_point, mid_point + 1] = Player.BLACK.id
+        self.board[mid_point + 1, mid_point] = Player.BLACK.id
+        self.board[mid_point + 1, mid_point + 1] = Player.WHITE.id
         self.previous_board: NDArray[np.byte] = self.board
         self.getters = [
             self._get_left_stones_to_flip,
@@ -90,14 +95,21 @@ class Board:
         ]
         self._draw()
 
+    @cached_property
+    def all_board_positions(self) -> list[Position]:
+        """Returns a list of all board positions."""
+        return list(
+            Position(row, col) for row, col in product(range(Board.SIZE), repeat=2)
+        )
+
     def _get_left_stones_to_flip(self, pos: Position) -> list[Position]:
         """Returns list of positions, left of given position, to flip if stone with given position is played by current player."""
         result: list[Position] = []
         row = pos.row
         col = pos.column
-        if col > 1 and self.board[row, col - 1] == self.player.other_id():
+        if col > 1 and self.board[row, col - 1] == self.player.other_id:
             for index in range(col - 2, -1, -1):
-                if self.board[row, index] == self.player.id():
+                if self.board[row, index] == self.player.id:
                     result.extend(
                         Position(row=row, column=c) for c in range(index + 1, col)
                     )
@@ -111,10 +123,10 @@ class Board:
         column = pos.column
         if (
             column < Board.SIZE - 1
-            and self.board[row, column + 1] == self.player.other_id()
+            and self.board[row, column + 1] == self.player.other_id
         ):
             for index in range(column + 2, Board.SIZE):
-                if self.board[row, index] == self.player.id():
+                if self.board[row, index] == self.player.id:
                     result.extend(
                         Position(row=row, column=c) for c in range(column + 1, index)
                     )
@@ -126,9 +138,9 @@ class Board:
         result: list[Position] = []
         row = pos.row
         column = pos.column
-        if row > 1 and self.board[row - 1, column] == self.player.other_id():
+        if row > 1 and self.board[row - 1, column] == self.player.other_id:
             for index in range(row - 2, -1, -1):
-                if self.board[index, column] == self.player.id():
+                if self.board[index, column] == self.player.id:
                     result.extend(
                         Position(row=r, column=column) for r in range(index + 1, row)
                     )
@@ -140,12 +152,9 @@ class Board:
         result: list[Position] = []
         row = pos.row
         column = pos.column
-        if (
-            row < Board.SIZE - 1
-            and self.board[row + 1, column] == self.player.other_id()
-        ):
+        if row < Board.SIZE - 1 and self.board[row + 1, column] == self.player.other_id:
             for index in range(row + 2, Board.SIZE):
-                if self.board[index, column] == self.player.id():
+                if self.board[index, column] == self.player.id:
                     result.extend(
                         Position(row=r, column=column) for r in range(row + 1, index)
                     )
@@ -160,12 +169,12 @@ class Board:
         if (
             row > 1
             and column < Board.SIZE - 1
-            and self.board[row - 1, column + 1] == self.player.other_id()
+            and self.board[row - 1, column + 1] == self.player.other_id
         ):
             for r_index, c_index in zip(
                 range(row - 2, -1, -1), range(column + 2, Board.SIZE)
             ):
-                if self.board[r_index, c_index] == self.player.id():
+                if self.board[r_index, c_index] == self.player.id:
                     result.extend(
                         Position(row=r, column=c)
                         for r, c in zip(
@@ -183,12 +192,12 @@ class Board:
         if (
             row > 1
             and column > 1
-            and self.board[row - 1, column - 1] == self.player.other_id()
+            and self.board[row - 1, column - 1] == self.player.other_id
         ):
             for r_index, c_index in zip(
                 range(row - 2, -1, -1), range(column - 2, -1, -1)
             ):
-                if self.board[r_index, c_index] == self.player.id():
+                if self.board[r_index, c_index] == self.player.id:
                     result.extend(
                         Position(row=r, column=c)
                         for r, c in zip(
@@ -206,12 +215,12 @@ class Board:
         if (
             row < Board.SIZE - 1
             and column < Board.SIZE - 1
-            and self.board[row + 1, column + 1] == self.player.other_id()
+            and self.board[row + 1, column + 1] == self.player.other_id
         ):
             for r_index, c_index in zip(
                 range(row + 2, Board.SIZE), range(column + 2, Board.SIZE)
             ):
-                if self.board[r_index, c_index] == self.player.id():
+                if self.board[r_index, c_index] == self.player.id:
                     result.extend(
                         Position(row=r, column=c)
                         for r, c in zip(
@@ -229,12 +238,12 @@ class Board:
         if (
             row < Board.SIZE - 1
             and column > 1
-            and self.board[row + 1, column - 1] == self.player.other_id()
+            and self.board[row + 1, column - 1] == self.player.other_id
         ):
             for r_index, c_index in zip(
                 range(row + 2, Board.SIZE), range(column - 2, -1, -1)
             ):
-                if self.board[r_index, c_index] == self.player.id():
+                if self.board[r_index, c_index] == self.player.id:
                     result.extend(
                         Position(row=r, column=c)
                         for r, c in zip(
@@ -262,11 +271,11 @@ class Board:
         else:
             self.previous_board = np.copy(board)
             logger.debug("Flip stones %s", to_flip)
-            board[row, column] = self.player.id()
+            board[row, column] = self.player.id
             for pos in to_flip:
-                board[pos.row, pos.column] = self.player.id()
+                board[pos.row, pos.column] = self.player.id
             self._draw()
-            self.player = self.player.other()
+            self.player = self.player.other
 
     def revert(self):
         """
@@ -276,22 +285,23 @@ class Board:
             logger.info("Reverting to previous state.")
             self.board = self.previous_board
             self._draw()
-            self.player = self.player.other()
+            self.player = self.player.other
 
     def pass_move(self) -> None:
-        for pos in (
-            Position(row, col)
-            for row, col in product(range(Board.SIZE), repeat=2)
-            if not self.board[row, col]
-        ):
-            for get_fct in self.getters:
-                if get_fct(pos):
-                    logger.warning(
-                        "Passing is not permitted for %s as available move exists.",
-                        self.player.name,
-                    )
-                    return
-        self.player = self.player.other()
+        for pos in self.all_board_positions:
+            if not self.board[pos.row, pos.column]:
+                for get_fct in self.getters:
+                    if get_fct(pos):
+                        logger.warning(
+                            "Passing is not permitted for %s as available move exists.",
+                            self.player.name,
+                        )
+                        return
+        self.player = self.player.other
+
+    def score(self, player: Player) -> int:
+        """Returns the current score for the given player."""
+        return np.count_nonzero(self.board == player.id)
 
     def _draw(self):
         """Draws the current pieces on the board."""
@@ -306,13 +316,13 @@ class Board:
             v_end = (i * Board.SQUARE_SIZE, length)
             pg.draw.line(self.screen, BLACK_RGB, v_start, v_end, Board.LINE_WIDTH)
         # draw stones
-        for row, column in product(range(Board.SIZE), repeat=2):
-            if id := self.board[row, column]:
-                x_pos = (column + 1 / 2) * Board.SQUARE_SIZE
-                y_pos = (row + 1 / 2) * Board.SQUARE_SIZE
+        for pos in self.all_board_positions:
+            if id := self.board[pos.row, pos.column]:
+                x_pos = (pos.column + 1 / 2) * Board.SQUARE_SIZE
+                y_pos = (pos.row + 1 / 2) * Board.SQUARE_SIZE
                 pg.draw.circle(
                     self.screen,
-                    Player.from_id(id).rgb(),
+                    Player.from_id(id).rgb,
                     (x_pos, y_pos),
                     Board.CIRCLE_RADIUS,
                 )
