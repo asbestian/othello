@@ -17,9 +17,10 @@ Execute and tested with Python **3.10**
 
 When game is running, press
 
-- `p` to pass
-- `q` to quit
+- `p` to pass a move
+- `q` to quit the game
 - `r` to revert last move
+- `s` to show current scores
 
 
 
