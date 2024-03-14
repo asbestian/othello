@@ -3,8 +3,6 @@
 import logging
 from dataclasses import dataclass
 from enum import Enum
-from functools import cached_property
-from itertools import product
 
 import numpy as np
 import pygame as pg
@@ -94,13 +92,6 @@ class Board:
             self._get_bottom_left_stones_to_flip,
         ]
         self._draw()
-
-    @cached_property
-    def all_board_positions(self) -> list[Position]:
-        """Returns a list of all board positions."""
-        return list(
-            Position(row, col) for row, col in product(range(Board.SIZE), repeat=2)
-        )
 
     def _get_left_stones_to_flip(self, pos: Position) -> list[Position]:
         """Returns list of positions, left of given position, to flip if stone with given position is played by current player."""
@@ -288,15 +279,15 @@ class Board:
             self.player = self.player.other
 
     def pass_move(self) -> None:
-        for pos in self.all_board_positions:
-            if not self.board[pos.row, pos.column]:
-                for get_fct in self.getters:
-                    if get_fct(pos):
-                        logger.warning(
-                            "Passing is not permitted for %s as available move exists.",
-                            self.player.name,
-                        )
-                        return
+        for row, column in np.argwhere(self.board == 0):
+            pos = Position(row=row, column=column)
+            for get_fct in self.getters:
+                if get_fct(pos):
+                    logger.warning(
+                        "Passing is not permitted for %s as available move exists.",
+                        self.player.name,
+                    )
+                    return
         self.player = self.player.other
 
     def score(self, player: Player) -> int:
@@ -316,13 +307,13 @@ class Board:
             v_end = (i * Board.SQUARE_SIZE, length)
             pg.draw.line(self.screen, BLACK_RGB, v_start, v_end, Board.LINE_WIDTH)
         # draw stones
-        for pos in self.all_board_positions:
-            if id := self.board[pos.row, pos.column]:
-                x_pos = (pos.column + 1 / 2) * Board.SQUARE_SIZE
-                y_pos = (pos.row + 1 / 2) * Board.SQUARE_SIZE
-                pg.draw.circle(
-                    self.screen,
-                    Player.from_id(id).rgb,
-                    (x_pos, y_pos),
-                    Board.CIRCLE_RADIUS,
-                )
+        for row, column in np.argwhere(self.board != 0):
+            x_pos = (column + 1 / 2) * Board.SQUARE_SIZE
+            y_pos = (row + 1 / 2) * Board.SQUARE_SIZE
+            id = self.board[row, column]
+            pg.draw.circle(
+                self.screen,
+                Player.from_id(id).rgb,
+                (x_pos, y_pos),
+                Board.CIRCLE_RADIUS,
+            )
